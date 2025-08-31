@@ -62,6 +62,9 @@ def csv_to_sql(csv_filepath):
     
     try:
         for statement in create_sql.split(';'):    # Split on ‘;’ which is SQL command separator                                                
+            if not statement.strip():   # Check if the statement is empty or contains only spaces/tabs
+                continue
+
             cursor.execute(statement)     # Execute each part separately                                                                          
         conn.commit()     # Commit changes to the database                     
     except Exception as e:
@@ -73,6 +76,9 @@ def csv_to_sql(csv_filepath):
         next(reader)   # Skip column names
         
         for row in reader:
+            if not all(row):   # Check if the row is empty or contains only spaces/tabs                                                           
+                continue                                                                                                                          
+
             cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
     
     conn.commit()   # Commit changes to the database
