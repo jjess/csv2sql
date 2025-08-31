@@ -4,15 +4,15 @@ import csv
 import pymysql
 import yaml
 
-CONFIG_PATH = 'src/etc/config.yml'  # Global variable for config path
+CONFIG_PATH = 'src/etc/config.yml'   # Global variable for config path
 
 def usage():
-    print("Usage: python3 csv2sql.py   --csvfile <csv_file> [--dbtable <db_table>]")
+    print("Usage: python3 csv2sql.py    --csvfile <csv_file> [--dbtable <db_table>]")
 
 def load_config(config_path):
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
-    return config['database']
+    return config['mysql_connection']
 
 def csv_to_sql(csv_filepath, db_name):
     # Load database configuration from YAML file
@@ -27,22 +27,22 @@ def csv_to_sql(csv_filepath, db_name):
 
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
-        columns = next(reader)  # Get the column names from the CSV file
+        columns = next(reader)   # Get the column names from the CSV file
         
         # Create table in MariaDB database based on the column names
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join([col + ' TEXT' for col in columns])})")
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name}  ({', '.join([col + ' TEXT' for col in columns])})")
     
-    conn.commit()  # Commit changes to the database
+    conn.commit()   # Commit changes to the database
 
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
-        next(reader)  # Skip column names
+        next(reader)   # Skip column names
         
         for row in reader:
-            cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
+            cursor.execute(f"INSERT INTO {table_name}  ({', '.join([col for col in columns])}) VALUES  ({', '.join(['%s' for _ in columns])})", row)
     
-    conn.commit()  # Commit changes to the database
-    conn.close()  # Close connection to the MariaDB database
+    conn.commit()   # Commit changes to the database
+    conn.close()   # Close connection to the MariaDB database
 
 if __name__ == "__main__":
     try:
