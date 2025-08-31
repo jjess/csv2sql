@@ -8,15 +8,22 @@ def csv_to_sql(csv_filepath, db_name):
     
     # Create table based on CSV file name
     table_name = csv_filepath.split('/')[-1].split('.')[0]
-    cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join([col for col in csv_columns])})")
-    
-    # Read CSV file and insert data into SQLite table
+
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
-        columns = next(reader)
+        columns = next(reader)  # Get the column names from the CSV file
+        
+        # Create table in SQLite database based on the column names
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join([col + ' TEXT' for col in columns])})")
+    
+    conn.commit()  # Commit changes to the database
+
+    with open(csv_filepath, 'r') as f:
+        reader = csv.reader(f)
+        next(reader)  # Skip column names
         
         for row in reader:
             cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['?' for _ in columns])})", row)
     
-    conn.commit()
-    conn.close()
+    conn.commit()  # Commit changes to the database
+    conn.close()  # Close connection to the SQLite database
