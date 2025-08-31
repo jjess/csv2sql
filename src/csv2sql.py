@@ -59,7 +59,11 @@ def csv_to_sql(csv_filepath):
 
     db_name = config['database']   # Get the database name from the configuration                                                                 
 
-    conn = pymysql.connect(host=config['host'], user=config['user'], password=config['password'], db=db_name)
+    conn = pymysql.connect(host=config['host'], 
+                           user=config['user'], 
+                           password=config['password'], 
+                           db=db_name,
+                           local_infile=True )
     cursor = conn.cursor()
     
     table_name = csv_filepath.split('/')[-1].split('.')[0]
@@ -94,13 +98,28 @@ def csv_to_sql(csv_filepath):
             if not all(row):   # Check if the row is empty or contains only spaces/tabs                                                           
                 continue                                                                                                                          
 
-            cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})",
-                           row)
+            #cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})",
+            #               row)
             line_count += 1
+    try: 
+        logger.info(f"   ---> loading {csv_filepath} with LOAD DATA LOCAL INFILE to table {table_name} ...")   # Log successful addition of data                                        
+        sql =  f"""
+LOAD DATA LOCAL INFILE '{csv_filepath}' INTO TABLE {table_name} FIELDS TERMINATED BY ',' ENCLOSED BY   '\"' LINES    
+TERMINATED BY  '\n' IGNORE 1 ROWS;
+        """
+        cursor.execute(sql)         
+        conn.commit()   # Commit changes to the database
+        logger.info(f"   ---> Added {line_count} rows to table {table_name}.")   # Log successful addition of data                                        
+    except Exception as e:
+        print(f"   ---> error inserting data with LOAD DATA LOCAL INFILE '{csv_filepath}'... : {str(e)}")
+        logger.error( f"   ---> error inserting data with LOAD DATA LOCAL INFILE '{csv_filepath}'... : {str(e)}")
     
+
     conn.commit()   # Commit changes to the database
-    logger.info(f"   ---> Added {line_count} rows to table {table_name}.")   # Log successful addition of data                                        
+    #logger.info(f"   ---> Added {line_count} rows to table {table_name}.")   # Log successful addition of data                                        
     conn.close()   # Close connection to the MariaDB database
+
+    return
 
 
 
