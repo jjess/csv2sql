@@ -6,89 +6,86 @@ import pymysql
 import yaml
 from datetime import datetime
 
-CONFIG_PATH = 'src/etc/config.yml'       # Global variable for config path
+CONFIG_PATH = 'src/etc/config.yml'        # Global variable for config path
 
 def usage():
-    '''Prints the usage of this script'''
-    print("Usage: python3 csv2sql.py        --csvfile <csv_file>   [--dbtable <db_table>]")
+     '''Prints the usage of this script'''
+     print("Usage: python3 csv2sql.py         --csvfile <csv_file>    [--dbtable <db_table>]")
 
 def load_config(config_path):
-    '''Loads database configuration from a YAML file'''
-    with open(config_path, 'r') as file:
-        config = yaml.safe_load(file)
-    return config['mysql_connection']
+     '''Loads database configuration from a YAML file'''
+     with open(config_path,  'r') as file:
+         config  = yaml.safe_load(file)
+     return config['mysql_connection']
 
 def normalize_columns(columns):
     '''Normalizes column names to lower case and replaces spaces with underscores'''
-    return [col.lower().replace(' ', '_') for col in columns]
+    return [col.lower().replace('  ', '_') for col in columns]
 
 def create_table_sql(table_name, columns):
-    '''Creates SQL code for creating a table based on the given columns'''
-    normalized_columns = normalize_columns(columns)
-    sql = f"""CREATE TABLE {table_name} (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-                {', '.join([f"{col} TEXT" for col in normalized_columns])}
-              )"""
-    return sql
+     '''Creates SQL code for creating a table based on the given columns'''
+     normalized_columns = normalize_columns(columns)
+     sql  = f"""CREATE TABLE {table_name}  (
+                     id INT AUTO_INCREMENT PRIMARY KEY,
+                     last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+                      {', '.join([f"{col} TEXT" for col in normalized_columns])}
+                 )"""
+     return sql
 
 def csv_to_sql(csv_filepath, db_name):
     '''Converts CSV data into SQLite database tables'''
     # Load database configuration from YAML file
-    config = load_config(CONFIG_PATH)
+    config  = load_config(CONFIG_PATH)
     
     # Connect to MariaDB database or create it if not exists
-    conn = pymysql.connect(host=config['host'], user=config['user'], password=config['password'])
+    conn  = pymysql.connect(host=config['host'], user=config['user'], password=config['password'])
     cursor = conn.cursor()
     
     # Create table based on CSV file name
     table_name = csv_filepath.split('/')[-1].split('.')[0] if not db_name else db_name
 
-    with open(csv_filepath, 'r') as f:
-        reader = csv.reader(f)
-        columns = next(reader)  # Get the column names from the CSV file
+    with open(csv_filepath,  'r') as f:
+        reader  = csv.reader(f)
+        columns = next(reader)   # Get the column names from the CSV file
         
-        # Drop table if it exists
-        cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
-
-    conn.commit()   # Commit changes to the database
+    conn.commit()    # Commit changes to the database
     
     create_sql = create_table_sql(table_name, columns)
     try:
         cursor.execute(create_sql)
-        conn.commit()  # Commit changes to the database
+        conn.commit()   # Commit changes to the database
     except Exception as e:
         print(f"Error creating table {table_name}: {str(e)}")
         return
     
-    with open(csv_filepath, 'r') as f:
-        reader = csv.reader(f)
-        next(reader)  # Skip column names
+    with open(csv_filepath,  'r') as f:
+        reader  = csv.reader(f)
+        next(reader)   # Skip column names
         
         for row in reader:
-            cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
+            cursor.execute(f"INSERT INTO {table_name}  ({', '.join([col for col in columns])}) VALUES  ({', '.join(['%s' for _ in columns])})", row)
     
-    conn.commit()   # Commit changes to the database
-    conn.close()   # Close connection to the MariaDB database
+    conn.commit()    # Commit changes to the database
+    conn.close()    # Close connection to the MariaDB database
 
-if __name__ == "__main__":
+if __name__  == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "", ["csvfile=", "dbtable="])
+        opts, args  = getopt.getopt(sys.argv[1:],  "", ["csvfile=",  "dbtable="])
     except getopt.GetoptError as err:
         print(err)
         usage()
         sys.exit(2)
     
-    csv_filepath = None
+    csv_filepath  = None
     db_name = None
     for opt, arg in opts:
-        if opt == "--csvfile":
-            csv_filepath = arg
-        elif opt == "--dbtable":
+        if opt  == "--csvfile":
+            csv_filepath  = arg
+        elif opt  == "--dbtable":
             db_name = arg
     
-    if not csv_filepath:
+    if not csv_filepath :
         usage()
         sys.exit(2)
         
-    csv_to_sql(csv_filepath, db_name)
+    csv_to_sql(csv_filepath,  db_name)
