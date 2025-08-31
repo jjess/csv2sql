@@ -1,37 +1,46 @@
 import sys
 import getopt
 import csv
-import sqlite3
+import pymysql
+import yaml
 
 def usage():
-    print("Usage: python3 csv2sql.py --csvfile <csv_file> [--dbtable <db_table>]")
+    print("Usage: python3 csv2sql.py  --csvfile <csv_file> [--dbtable <db_table>]")
+
+def load_config(config_path):
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config['database']
 
 def csv_to_sql(csv_filepath, db_name):
-    # Connect to SQLite database or create it if not exists
-    conn = sqlite3.connect(db_name)
+    # Load database configuration from YAML file
+    config = load_config('src/etc/config.yml')
+    
+    # Connect to MariaDB database or create it if not exists
+    conn = pymysql.connect(host=config['host'], user=config['user'], password=config['password'])
     cursor = conn.cursor()
     
     # Create table based on CSV file name
-    table_name = csv_filepath.split('/')[-1].split('.')[0]
+    table_name = csv_filepath.split('/')[-1].split('.')[0] if not db_name else db_name
 
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
-        columns = next(reader)  # Get the column names from the CSV file
+        columns = next(reader)   # Get the column names from the CSV file
         
-        # Create table in SQLite database based on the column names
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name}   ({', '.join([col + ' TEXT' for col in columns])})")
+        # Create table in MariaDB database based on the column names
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join([col + ' TEXT' for col in columns])})")
     
-    conn.commit()  # Commit changes to the database
+    conn.commit()   # Commit changes to the database
 
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
-        next(reader)  # Skip column names
+        next(reader)   # Skip column names
         
         for row in reader:
-            cursor.execute(f"INSERT INTO {table_name}   ({', '.join([col for col in columns])}) VALUES   ({', '.join(['?' for _ in columns])})", row)
+            cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
     
-    conn.commit()  # Commit changes to the database
-    conn.close()  # Close connection to the SQLite database
+    conn.commit()   # Commit changes to the database
+    conn.close()   # Close connection to the MariaDB database
 
 if __name__ == "__main__":
     try:
@@ -42,7 +51,7 @@ if __name__ == "__main__":
         sys.exit(2)
     
     csv_filepath = None
-    db_name = 'test_data'
+    db_name = None
     for opt, arg in opts:
         if opt == "--csvfile":
             csv_filepath = arg
