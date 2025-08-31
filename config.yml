@@ -1,0 +1,5 @@
+mysql_connection:
+  user: "test"
+  password: "7357"
+  host: "10.0.0.201"
+  database: "test"
