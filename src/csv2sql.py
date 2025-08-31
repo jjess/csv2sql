@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+#
 # This script converts CSV data into SQLite database tables.
 import sys
 import getopt
@@ -7,6 +9,7 @@ import yaml
 from datetime import datetime
 
 CONFIG_PATH = 'src/etc/config.yml'  # Global variable for config path
+
 
 def usage():
     '''Prints the usage of this script'''

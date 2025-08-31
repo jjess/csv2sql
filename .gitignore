@@ -1,0 +1,66 @@
+.aider*
+# Byte-compiled / optimized / DLL files                                                                                                           
+__pycache__/                                                                                                                                      
+*.py[cod]                                                                                                                                         
+*$py.class                                                                                                                                        
+                                                                                                                                                  
+# C extensions                                                                                                                                    
+*.so                                                                                                                                              
+                                                                                                                                                  
+# Distribution / packaging                                                                                                                        
+.Python                                                                                                                                           
+build/                                                                                                                                            
+develop-eggs/                                                                                                                                     
+dist/                                                                                                                                             
+downloads/                                                                                                                                        
+egg-info/                                                                                                                                         
+.eggs/                                                                                                                                            
+lib/                                                                                                                                              
+lib64/                                                                                                                                            
+parts/                                                                                                                                            
+sdist/                                                                                                                                            
+var/                                                                                                                                              
+wheels/                                                                                                                                           
+pip-wheel-metadata/                                                                                                                               
+share/python-wheels/                                                                                                                              
+*.egg-info/                                                                                                                                       
+.installed.cfg                                                                                                                                    
+*.egg                                                                                                                                             
+MANIFEST                                                                                                                                          
+                                                                                                                                                  
+# PyCharm                                                                                                                                         
+.idea/                                                                                                                                            
+                                                                                                                                                  
+# Virtual environments                                                                                                                            
+venv/                                                                                                                                             
+                                                                                                                                                  
+# IPython Notebook                                                                                                                                
+.ipynb_checkpoints/                                                                                                                               
+                                                                                                                                                  
+# Jupyter Notebooks                                                                                                                               
+.jupyter/                                                                                                                                         
+                                                                                                                                                  
+# Python language server                                                                                                                          
+.ropeproject/                                                                                                                                     
+                                                                                                                                                  
+# Spyder IDE                                                                                                                                      
+.spyder-py3-kernel/                                                                                                                               
+                                                                                                                                                  
+# PyLint cache                                                                                                                                    
+.pylint.d/                                                                                                                                        
+                                                                                                                                                  
+# Sphinx documentation                                                                                                                            
+docs/_build/                                                                                                                                      
+                                                                                                                                                  
+# JupyterHub specific stuff                                                                                                                       
+jupyterhub-singleuser-start/                                                                                                                      
+                                                                                                                                                  
+# Logs and output from previous runs                                                                                                              
+logs/                                                                                                                                             
+out/                                                                                                                                              
+
+                                                                                                                                                  
+# Temporary files                                                                                                                                 
+tmp/                                                                                                                                              
+temp/                       
+
