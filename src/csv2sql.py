@@ -18,8 +18,8 @@ LOGFILE = "log/csv2sql.log"   # Log file location
 
 # Set up logging to both file and standard output                                                                                                 
 level    = logging.INFO
-format   = '  %(message)s'
-handlers = [logging.FileHandler('filename.log'), logging.StreamHandler()]
+format   = '%(asctime)s  %(message)s'
+handlers = [logging.FileHandler(LOGFILE), logging.StreamHandler()]
 
 logging.basicConfig(level = level, format = format, handlers = handlers)
 logger = logging.getLogger()
@@ -99,7 +99,7 @@ def csv_to_sql(csv_filepath):
             line_count += 1
     
     conn.commit()   # Commit changes to the database
-    logger.info(f"   ----> Added {line_count} rows to table {table_name}.")   # Log successful addition of data                                        
+    logger.info(f"   ---> Added {line_count} rows to table {table_name}.")   # Log successful addition of data                                        
     conn.close()   # Close connection to the MariaDB database
 
 
