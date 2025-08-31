@@ -8,12 +8,11 @@ import pymysql
 import yaml
 from datetime import datetime
 
-CONFIG_PATH = 'src/etc/config.yml'   # Global variable for config path
-DB_NAME = 'test'  # Default database name
+CONFIG_PATH = 'src/etc/config.yml'     # Global variable for config path
 
 def usage():
     '''Prints the usage of this script'''
-    print("Usage: python3 csv2sql.py --csvfile <csv_file> [--dbtable <db_table>]")
+    print("Usage: python3 csv2sql.py   --csvfile <csv_file> [--dbtable <db_table>]")
 
 def load_config(config_path):
     '''Loads database configuration from a YAML file'''
@@ -23,26 +22,26 @@ def load_config(config_path):
 
 def normalize_columns(columns):
     '''Normalizes column names to lower case and replaces spaces with underscores'''
-    return [col.lower().replace(' ', '_') for col in columns]
+    return [col.lower().replace('  ', '_') for col in columns]
 
 def create_table_sql(table_name, columns):
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
-    sql = f"""DROP TABLE IF EXISTS {DB_NAME}.{table_name}; 
-               CREATE TABLE {DB_NAME}.{table_name} (
+    sql = f"""DROP TABLE IF EXISTS {table_name}; 
+               CREATE TABLE {table_name}  (
                    id INT AUTO_INCREMENT PRIMARY KEY,
                    last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-                      {', '.join([f"{col} TEXT" for col in normalized_columns])}
-                )"""
+                       {', '.join([f"{col} TEXT" for col in normalized_columns])}
+                  )"""
     return sql
 
 def csv_to_sql(csv_filepath):
     '''Converts CSV data into SQLite database tables'''
-    # Load database configuration from YAML file
+     # Load database configuration from YAML file
     config = load_config(CONFIG_PATH)
     
     # Connect to MariaDB database or create it if not exists
-    conn = pymysql.connect(host=config['host'], user=config['user'], password=config['password'], db=DB_NAME)
+    conn = pymysql.connect(host=config['host'], user=config['user'], password=config['password'], db=config['database'])
     cursor = conn.cursor()
     
     # Create table based on CSV file name
@@ -50,26 +49,26 @@ def csv_to_sql(csv_filepath):
 
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
-        columns = next(reader)   # Get the column names from the CSV file
+        columns = next(reader)     # Get the column names from the CSV file
         
     create_sql = create_table_sql(table_name, columns)
     
     try:
         cursor.execute(create_sql)
-        conn.commit()   # Commit changes to the database
+        conn.commit()     # Commit changes to the database
     except Exception as e:
         print(f"Error creating table {table_name}: {str(e)}")
         return
         
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
-        next(reader)   # Skip column names
+        next(reader)     # Skip column names
         
         for row in reader:
-            cursor.execute(f"INSERT INTO {DB_NAME}.{table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
+            cursor.execute(f"INSERT INTO {table_name}  ({', '.join([col for col in columns])}) VALUES  ({', '.join(['%s' for _ in columns])})", row)
     
-    conn.commit()   # Commit changes to the database
-    conn.close()   # Close connection to the MariaDB database
+    conn.commit()     # Commit changes to the database
+    conn.close()     # Close connection to the MariaDB database
 
 if __name__ == "__main__":
     try:
