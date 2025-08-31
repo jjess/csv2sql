@@ -33,12 +33,13 @@ def normalize_columns(columns):
 def create_table_sql(table_name, columns):
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
-    sql = f"""DROP TABLE IF EXISTS {DB_NAME}.{table_name}; 
-               CREATE TABLE {DB_NAME}.{table_name} (
-                   id INT AUTO_INCREMENT PRIMARY KEY,
-                   last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-                        {', '.join([f"{col} VARCHAR(64)" for col in normalized_columns])}
-                  )"""
+    sql = f"""
+DROP TABLE IF EXISTS {table_name}; 
+CREATE TABLE {table_name} (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+         {', '.join([f"{col} VARCHAR(64)" for col in normalized_columns])}
+   );"""
     logger.info(sql)   # Log the SQL command to create table
     return sql
 
@@ -71,7 +72,7 @@ def csv_to_sql(csv_filepath):
         next(reader)   # Skip column names
         
         for row in reader:
-            cursor.execute(f"INSERT INTO {DB_NAME}.{table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
+            cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
     
     conn.commit()   # Commit changes to the database
     conn.close()   # Close connection to the MariaDB database
