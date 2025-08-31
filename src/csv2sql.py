@@ -61,7 +61,7 @@ def csv_to_sql(csv_filepath):
     create_sql = create_table_sql(table_name, columns)
     
     try:
-        for statement in create_sql.split(';'):    # Split on ‘;’ which is SQL command separator                                                  
+        for statement in create_sql.split(';'):    # Split on ‘;’ which is SQL command separator                                                
             cursor.execute(statement)     # Execute each part separately                                                                          
         conn.commit()     # Commit changes to the database                     
     except Exception as e:
