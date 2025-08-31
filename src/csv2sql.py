@@ -16,6 +16,8 @@ LOGFILE = "log/csv2sql.log"   # Log file location
 logging.basicConfig(level=logging.INFO, format='%(asctime)s  %(message)s', filename=LOGFILE, filemode='w')
 logger = logging.getLogger()
 
+
+
 def usage():
     '''Prints the usage of this script'''
     print("Usage: python3 csv2sql.py   --csvfile <csv_file> [--dbtable <db_table>]")
