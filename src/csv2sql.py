@@ -34,12 +34,12 @@ def create_table_sql(table_name, columns):
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
     sql = f"""
-DROP TABLE IF EXISTS {table_name}; 
-CREATE TABLE {table_name} (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-         {', '.join([f"{col} VARCHAR(64)" for col in normalized_columns])}
-   );"""
+    DROP TABLE IF EXISTS {table_name}; 
+    CREATE TABLE {table_name} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+             {', '.join([f"{col} VARCHAR(64)" for col in normalized_columns])}
+       );"""
     logger.info(sql)   # Log the SQL command to create table
     return sql
 
@@ -61,8 +61,9 @@ def csv_to_sql(csv_filepath):
     create_sql = create_table_sql(table_name, columns)
     
     try:
-        cursor.execute(create_sql)
-        conn.commit()   # Commit changes to the database
+        for statement in create_sql.split(';'):    # Split on ‘;’ which is SQL command separator                                                  
+            cursor.execute(statement)     # Execute each part separately                                                                          
+        conn.commit()     # Commit changes to the database                     
     except Exception as e:
         print(f"Error creating table {table_name}: {str(e)}")
         return
@@ -76,6 +77,8 @@ def csv_to_sql(csv_filepath):
     
     conn.commit()   # Commit changes to the database
     conn.close()   # Close connection to the MariaDB database
+
+
 
 if __name__ == "__main__":
     try:

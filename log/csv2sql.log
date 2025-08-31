@@ -1,6 +1,0 @@
-2025-08-31 16:29:52,628  DROP TABLE IF EXISTS test.cities; 
-               CREATE TABLE test.cities (
-                   id INT AUTO_INCREMENT PRIMARY KEY,
-                   last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-                        city VARCHAR(64), country VARCHAR(64), population VARCHAR(64), language VARCHAR(64), size VARCHAR(64)
-                  )
