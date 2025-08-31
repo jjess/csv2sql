@@ -45,6 +45,7 @@ def create_table_sql(table_name, columns):
 
 def csv_to_sql(csv_filepath):
     '''Converts CSV data into SQLite database tables'''
+    logger.info(f"   ---> reading config.yml ...")   # Log successful addition of data                                        
     config = load_config(CONFIG_PATH)
 
     db_name = config['database']   # Get the database name from the configuration                                                                 
@@ -54,12 +55,14 @@ def csv_to_sql(csv_filepath):
     
     table_name = csv_filepath.split('/')[-1].split('.')[0]
 
+    logger.info(f"   ---> reading ${csv_filepath} to build the table ... ")   # Log successful addition of data                                        
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
         columns = next(reader)       # Get the column names from the CSV file
         
     create_sql = create_table_sql(table_name, columns)
     
+    logger.info(f"   ---> dropping/creating table {table_name} ... ")   # Log successful addition of data                                        
     try:
         for statement in create_sql.split(';'):    # Split on ‘;’ which is SQL command separator                                                
             if not statement.strip():   # Check if the statement is empty or contains only spaces/tabs
@@ -68,20 +71,26 @@ def csv_to_sql(csv_filepath):
             cursor.execute(statement)     # Execute each part separately                                                                          
         conn.commit()     # Commit changes to the database                     
     except Exception as e:
-        print(f"Error creating table {table_name}: {str(e)}")
+        print(f"   ---> error creating table {table_name}: {str(e)}")
+        logger.error(f"   ---> failed to create table {table_name}. Error: {str(e)}")   # Log error when creating the table fails                         
         return
-        
+
+    logger.info(f"   ---> reading ${csv_filepath} to insert data ... ")   # Log successful addition of data                                        
     with open(csv_filepath, 'r') as f:
         reader = csv.reader(f)
         next(reader)   # Skip column names
-        
+        line_count = 0
+
         for row in reader:
             if not all(row):   # Check if the row is empty or contains only spaces/tabs                                                           
                 continue                                                                                                                          
 
-            cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})", row)
+            cursor.execute(f"INSERT INTO {table_name} ({', '.join([col for col in columns])}) VALUES ({', '.join(['%s' for _ in columns])})",
+                           row)
+            line_count += 1
     
     conn.commit()   # Commit changes to the database
+    logger.info(f"   ----> Added {line_count} rows to table {table_name}.")   # Log successful addition of data                                        
     conn.close()   # Close connection to the MariaDB database
 
 
