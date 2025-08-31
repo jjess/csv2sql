@@ -13,10 +13,16 @@ CONFIG_PATH = 'src/etc/config.yml'       # Global variable for config path
 LOGFILE = "log/csv2sql.log"   # Log file location
 
 # Set up logging to a file
-logging.basicConfig(level=logging.INFO, format='%(asctime)s  %(message)s', filename=LOGFILE, filemode='w')
+#logging.basicConfig(level=logging.INFO, format='%(asctime)s  %(message)s', filename=LOGFILE, filemode='w')
+#logger = logging.getLogger()
+
+# Set up logging to both file and standard output                                                                                                 
+level    = logging.INFO
+format   = '  %(message)s'
+handlers = [logging.FileHandler('filename.log'), logging.StreamHandler()]
+
+logging.basicConfig(level = level, format = format, handlers = handlers)
 logger = logging.getLogger()
-
-
 
 def usage():
     '''Prints the usage of this script'''
@@ -35,12 +41,13 @@ def normalize_columns(columns):
 def create_table_sql(table_name, columns):
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
+    nl=",\n        "
     sql = f"""
     DROP TABLE IF EXISTS {table_name}; 
     CREATE TABLE {table_name} (
         id INT AUTO_INCREMENT PRIMARY KEY,
         last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
-             {', '.join([f"{col} VARCHAR(64)" for col in normalized_columns])}
+        {f"{nl}".join([f"{col} VARCHAR(64)" for col in normalized_columns])}
        );"""
     logger.info(sql)   # Log the SQL command to create table
     return sql
