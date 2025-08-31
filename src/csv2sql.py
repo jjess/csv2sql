@@ -10,7 +10,6 @@ from datetime import datetime
 import logging
 
 CONFIG_PATH = 'src/etc/config.yml'       # Global variable for config path
-DB_NAME = 'test'     # Default database name
 LOGFILE = "log/csv2sql.log"   # Log file location
 
 # Set up logging to a file
@@ -46,8 +45,10 @@ def create_table_sql(table_name, columns):
 def csv_to_sql(csv_filepath):
     '''Converts CSV data into SQLite database tables'''
     config = load_config(CONFIG_PATH)
-    
-    conn = pymysql.connect(host=config['host'], user=config['user'], password=config['password'], db=DB_NAME)
+
+    db_name = config['database']   # Get the database name from the configuration                                                                 
+
+    conn = pymysql.connect(host=config['host'], user=config['user'], password=config['password'], db=db_name)
     cursor = conn.cursor()
     
     table_name = csv_filepath.split('/')[-1].split('.')[0]
