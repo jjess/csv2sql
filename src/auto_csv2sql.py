@@ -3,6 +3,7 @@ import yaml
 from datetime import datetime
 import logging
 import csv
+from typing import List
 
 def load_config(config_path):
     '''Loads database configuration from a YAML file'''
@@ -10,11 +11,11 @@ def load_config(config_path):
         config = yaml.safe_load(file)
     return config['mysql_connection']
 
-def normalize_columns(columns):
+def normalize_columns(columns: List[str]) -> List[str]:
     '''Normalizes column names to lower case and replaces spaces with underscores'''
     return [col.lower().replace(' ', '_') for col in columns]
 
-def create_table_sql(table_name, columns):
+def create_table_sql(table_name: str, columns: List[str]) -> str:
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
     nl=",\n        "
@@ -27,7 +28,7 @@ def create_table_sql(table_name, columns):
     );"""
     return sql
 
-def csv_to_sql(csv_filepath):
+def csv_to_sql(csv_filepath: str) -> None:
     '''Converts CSV data into SQLite database tables'''
     config = load_config('src/etc/config.yml')
 
@@ -66,7 +67,7 @@ def csv_to_sql(csv_filepath):
         line_count = 0
 
         for row in reader:
-            if not All(row):
+            if not all(row):
                 continue
 
             sql =  f"""
