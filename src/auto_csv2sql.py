@@ -2,6 +2,7 @@ import pymysql
 import yaml
 from datetime import datetime
 import logging
+import csv
 
 def load_config(config_path):
     '''Loads database configuration from a YAML file'''
