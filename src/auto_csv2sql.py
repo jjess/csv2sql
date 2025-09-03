@@ -1,0 +1,83 @@
+import pymysql
+import yaml
+from datetime import datetime
+import logging
+
+def load_config(config_path):
+    '''Loads database configuration from a YAML file'''
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config['mysql_connection']
+
+def normalize_columns(columns):
+    '''Normalizes column names to lower case and replaces spaces with underscores'''
+    return [col.lower().replace(' ', '_') for col in columns]
+
+def create_table_sql(table_name, columns):
+    '''Creates SQL code for creating a table based on the given columns'''
+    normalized_columns = normalize_columns(columns)
+    nl=",\n        "
+    sql = f"""
+    DROP TABLE IF EXISTS {table_name}; 
+    CREATE TABLE {table_name} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+        {f"{nl}".join([f"{col} VARCHAR(64)" for col in normalized_columns])}
+    );"""
+    return sql
+
+def csv_to_sql(csv_filepath):
+    '''Converts CSV data into SQLite database tables'''
+    config = load_config('src/etc/config.yml')
+
+    db_name = config['database']
+
+    conn = pymysql.connect(host=config['host'], 
+                          user=config['user'], 
+                          password=config['password'], 
+                          db=db_name,
+                          local_infile=True )
+    cursor = conn.cursor()
+
+    table_name = csv_filepath.split('/')[-1].split('.')[0]
+
+    with open(csv_filepath, 'r') as f:
+        reader = csv.reader(f)
+        columns = next(reader)    
+
+    create_sql = create_table_sql(table_name, columns)
+
+    try:
+        for statement in create_sql.split(';'):    
+            if not statement.strip():
+                continue
+
+            cursor.execute(statement)     
+        conn.commit()     
+    except Exception as e:
+        print(f"Error creating table {table_name}: {str(e)}")
+        return
+
+    with open(csv_filepath, 'r') as f:
+        reader = csv.reader(f)
+        next(reader)
+
+        line_count = 0
+
+        for row in reader:
+            if not All(row):
+                continue
+
+            sql =  f"""
+LOAD DATA LOCAL INFILE '{csv_filepath}' INTO TABLE {table_name} FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES    
+TERMINATED BY  '\n' IGNORE 1 ROWS;
+            """
+            cursor.execute(sql)         
+            conn.commit()
+
+            line_count += 1
+
+    print(f"Added {line_count} rows to table {table_name}.")
+    conn.close()
+
+    return
