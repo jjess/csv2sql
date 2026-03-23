@@ -2,9 +2,11 @@ import sys
 import getopt
 from auto_csv2sql import csv_to_sql
 
+
 def usage():
     '''Prints the usage of this script'''
     print("Usage: python3 csv2sql.py --csvfile <csv_file> [--dbtable <db_table>]")
+
 
 if __name__ == "__main__":
     try:
@@ -27,3 +29,4 @@ if __name__ == "__main__":
         sys.exit(2)
 
     csv_to_sql(csv_filepath)
+
