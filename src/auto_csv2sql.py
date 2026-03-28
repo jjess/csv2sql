@@ -18,17 +18,25 @@ def normalize_columns(columns: List[str]) -> List[str]:
 def create_table_sql(table_name: str, columns: List[str]) -> str:
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
-    #header = str(',').join(columns) 
-
+    
+    save_table_name = f"{table_name}_SAVE"
+    
+    # Clone existing table to _SAVE if it exists
+    clone_sql = f"""
+    DROP TABLE IF EXISTS {save_table_name};
+    CREATE TABLE {save_table_name} LIKE {table_name};
+    """
+    
     nl=",\n        "
-    sql = f"""
+    create_sql = f"""
     DROP TABLE IF EXISTS {table_name}; 
     CREATE TABLE {table_name} (
         id INT AUTO_INCREMENT PRIMARY KEY,
         last_update TIMESTAMP NULL DEFAULT NOW() ON UPDATE NOW() ,
         {f"{nl}".join([f"{col} VARCHAR(64)" for col in normalized_columns])}
     );"""
-    return sql
+    
+    return clone_sql + create_sql
 
 def csv_to_sql(csv_filepath: str) -> None:
     '''Converts CSV data into MySQL database tables'''
