@@ -18,6 +18,8 @@ def normalize_columns(columns: List[str]) -> List[str]:
 def create_table_sql(table_name: str, columns: List[str]) -> str:
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
+    #header = str(',').join(columns) 
+
     nl=",\n        "
     sql = f"""
     DROP TABLE IF EXISTS {table_name}; 
@@ -74,7 +76,7 @@ def csv_to_sql(csv_filepath: str) -> None:
         ENCLOSED BY '"' 
         LINES TERMINATED BY '\n' 
         IGNORE 1 ROWS
-        (header)
+        ({header})
         SET id=NULL, last_update=CURRENT_TIMESTAMP ;
         """
         cursor.execute(sql)         

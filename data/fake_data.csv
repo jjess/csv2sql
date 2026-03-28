@@ -1,4 +1,4 @@
-id,name,age,birth_date,city,occupation,salary,hire_date,department,active
+userid,name,age,birth_date,city,occupation,salary,hire_date,department,active
 1,Alice,21,2002-01-01,New York,Engineer,34000,2021-01-01,Engineering,0
 2,Bob,22,2001-01-01,Los Angeles,Designer,38000,2021-01-01,Design,1
 3,Charlie,23,2000-01-01,Chicago,Teacher,42000,2020-01-01,Education,0
