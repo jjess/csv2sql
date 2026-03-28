@@ -15,17 +15,25 @@ def normalize_columns(columns: List[str]) -> List[str]:
     '''Normalizes column names to lower case and replaces spaces with underscores'''
     return [col.lower().replace(' ', '_') for col in columns]
 
-def create_table_sql(table_name: str, columns: List[str]) -> str:
+def create_table_sql(conn, table_name: str, columns: List[str]) -> str:
     '''Creates SQL code for creating a table based on the given columns'''
     normalized_columns = normalize_columns(columns)
     
     save_table_name = f"{table_name}_SAVE"
     
+    # Check if original table exists
+    cursor = conn.cursor()
+    cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
+    table_exists = cursor.fetchone() is not None
+    
     # Clone existing table to _SAVE if it exists
-    clone_sql = f"""
-    DROP TABLE IF EXISTS {save_table_name};
-    CREATE TABLE {save_table_name} LIKE {table_name};
-    """
+    clone_sql = ""
+    if table_exists:
+        clone_sql = f"""
+        DROP TABLE IF EXISTS {save_table_name};
+        CREATE TABLE {save_table_name} LIKE {table_name};
+        INSERT INTO {save_table_name} SELECT * FROM {table_name};
+        """
     
     nl=",\n        "
     create_sql = f"""
@@ -57,7 +65,7 @@ def csv_to_sql(csv_filepath: str) -> None:
         reader = csv.reader(f)
         columns = next(reader)    
 
-    create_sql = create_table_sql(table_name, columns)
+    create_sql = create_table_sql(conn, table_name, columns)
 
     header = str(',').join(columns) 
     print(f"columns in file: [{ header }]" )
