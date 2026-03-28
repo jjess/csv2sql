@@ -29,7 +29,7 @@ def create_table_sql(table_name: str, columns: List[str]) -> str:
     return sql
 
 def csv_to_sql(csv_filepath: str) -> None:
-    '''Converts CSV data into SQLite database tables'''
+    '''Converts CSV data into MySQL database tables'''
     config = load_config('src/etc/config.yml')
 
     db_name = config['database']
@@ -38,7 +38,7 @@ def csv_to_sql(csv_filepath: str) -> None:
                           user=config['user'], 
                           password=config['password'], 
                           db=db_name,
-                          local_infile=True )
+                          local_infile=True)
     cursor = conn.cursor()
 
     table_name = csv_filepath.split('/')[-1].split('.')[0]
@@ -58,28 +58,30 @@ def csv_to_sql(csv_filepath: str) -> None:
         conn.commit()     
     except Exception as e:
         print(f"Error creating table {table_name}: {str(e)}")
+        conn.close()
         return
 
-    with open(csv_filepath, 'r') as f:
-        reader = csv.reader(f)
-        next(reader)
-
-        line_count = 0
-
-        for row in reader:
-            if not all(row):
-                continue
-
-            sql =  f"""
-LOAD DATA LOCAL INFILE '{csv_filepath}' INTO TABLE {table_name} FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES    
-TERMINATED BY  '\n' IGNORE 1 ROWS;
-            """
-            cursor.execute(sql)         
-            conn.commit()
-
-            line_count += 1
-
-    print(f"Added {line_count} rows to table {table_name}.")
-    conn.close()
+    # Execute LOAD DATA INFILE once to load the entire file
+    try:
+        sql = f"""
+        LOAD DATA LOCAL INFILE '{csv_filepath}' 
+        INTO TABLE {table_name} 
+        FIELDS TERMINATED BY ',' 
+        ENCLOSED BY '"' 
+        LINES TERMINATED BY '\n' 
+        IGNORE 1 ROWS;
+        """
+        cursor.execute(sql)         
+        conn.commit()
+        
+        # Get the number of rows inserted
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+        line_count = cursor.fetchone()[0]
+        
+        print(f"Added {line_count} rows to table {table_name}.")
+    except Exception as e:
+        print(f"Error loading data into table {table_name}: {str(e)}")
+    finally:
+        conn.close()
 
     return
