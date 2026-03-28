@@ -23,7 +23,7 @@ def create_table_sql(table_name: str, columns: List[str]) -> str:
     DROP TABLE IF EXISTS {table_name}; 
     CREATE TABLE {table_name} (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
+        last_update TIMESTAMP NULL DEFAULT NOW() ON UPDATE NOW() ,
         {f"{nl}".join([f"{col} VARCHAR(64)" for col in normalized_columns])}
     );"""
     return sql
@@ -49,6 +49,10 @@ def csv_to_sql(csv_filepath: str) -> None:
 
     create_sql = create_table_sql(table_name, columns)
 
+    header = str(',').join(columns) 
+    print(f"columns in file: [{ header }]" )
+    print(f"create table command: [ {create_sql} ]")
+
     try:
         for statement in create_sql.split(';'):    
             if not statement.strip():
@@ -69,7 +73,9 @@ def csv_to_sql(csv_filepath: str) -> None:
         FIELDS TERMINATED BY ',' 
         ENCLOSED BY '"' 
         LINES TERMINATED BY '\n' 
-        IGNORE 1 ROWS;
+        IGNORE 1 ROWS
+        (header)
+        SET id=NULL, last_update=CURRENT_TIMESTAMP ;
         """
         cursor.execute(sql)         
         conn.commit()
